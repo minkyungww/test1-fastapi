@@ -1,9 +1,17 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+from fastapi.responses import JSONResponse
+from fastapi.encoders import jsonable_encoder
 
 class Cat(BaseModel):
     name:str
     id: int
+    
+class ResponseDTO(BaseModel):
+    code: int
+    message: str
+    data: object
+    
 
 app = FastAPI()
 
@@ -21,3 +29,17 @@ async def second(skip: int = 0, limit: int = 10): #쿼리 매개변수
 async def cat(cat: Cat):
     return cat
 
+# 에러처리(open api의 추가 응답)
+@app.get("/error")
+async def error():
+    dto = ResponseDTO(
+        code=0,
+        message="페이지가 없습니다.",
+        data=None
+    )
+    return JSONResponse(status_code=404, content=jsonable_encoder(dto))
+
+
+@app.get("/error1")
+async def error1():
+    return HTTPException(status_code=404, detail={"message":"ITEM NOT FOUND"})
